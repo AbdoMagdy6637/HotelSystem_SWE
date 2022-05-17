@@ -1,5 +1,5 @@
 # HotelSystem_SWE
-creat tables first from file ABDOMAGDYdatabase.txt in oracle
+creat tables first from file databaseABDOMAGDY.txt in oracle
 
 
 run every table without Alter table firstly

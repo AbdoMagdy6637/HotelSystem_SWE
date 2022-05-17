@@ -1,0 +1,145 @@
+CREATE TABLE Rooms1 (
+RoomID varchar(40) PRIMARY KEY, 
+RoomType   varchar(40) ,
+Status   NUMBER(1,0),  -- should i put it select in statment   true reserved   false not reserved
+Price     DECIMAL(7,2),
+Description  varchar(255) ,
+ClientID  integer --FK 
+);
+
+INSERT INTO Rooms1 (RoomID   ,RoomType,     Status,      Price,     Description, ClientID) 
+VALUES(             'A1'     ,'classic',   1	  ,      5000 ,     '75 meter ,2 beds , 1 toilet, wifi' ,369);
+
+INSERT INTO Rooms1 (RoomID   ,RoomType,     Status,      Price,     Description, ClientID) 
+VALUES(             'A2'     ,'normal'   ,  1	  ,      10000 ,     '150 meter ,4 beds , 1 toilet, wifi, SeaView ' , 370);
+
+INSERT INTO Rooms1 (RoomID   ,RoomType,     Status,      Price,     Description, ClientID) 
+VALUES(             'A3'     ,'classic',   1	  ,      2500 ,      '75 meter ,1 beds , 1 toilet' ,371);
+      
+INSERT INTO Rooms1 (RoomID   ,RoomType,     Status,      Price,     Description)  -- dont add , ClientID as it is not reserved
+VALUES (             'A4'    ,'classic',   0	  ,      3500 ,     '75 meter ,1 beds , 1 toilet, wifi' );
+
+
+select * from Rooms1;
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+CREATE TABLE Reservstion1( 
+ReservationID number(10)  PRIMARY KEY, 
+RoomPrice DECIMAL(7,2) ,
+Start_Date      DATE ,  -- should i put it select in statment  
+HowManyDays     number(3),
+End_Date    DATE ,        --should i put it select in statment  
+Created_Invoice     TIMESTAMP , --should i put it select in statment 
+Discount_percentage decimal(5,2),
+TotalPrice decimal (20,10),
+ClientID  number(10),   --FK 
+RoomID varchar(40)  --FK
+);
+
+INSERT INTO Reservstion1 (ReservationID,RoomPrice,Start_Date   ,HowManyDays ,End_Date   ,    Created_Invoice   ,Discount_percentage,TotalPrice, ClientID,RoomID) 
+VALUES(                     1          ,  100    ,DATE '2022-1-01',      5     ,DATE '2022-01-06' ,CURRENT_TIMESTAMP ,10                  , 90      , 369   ,'A1');
+
+INSERT INTO Reservstion1 (ReservationID,RoomPrice,Start_Date   ,HowManyDays ,End_Date   ,    Created_Invoice   ,Discount_percentage,TotalPrice,ClientID,RoomID) 
+VALUES(                       2        ,200      ,DATE  '2022-02-02'    ,      5  ,DATE  '2022-02-07' ,CURRENT_TIMESTAMP ,20                 , 180       ,370  , 'A2'     );
+
+INSERT INTO Reservstion1 (ReservationID,RoomPrice,Start_Date   ,HowManyDays ,End_Date   ,    Created_Invoice   ,Discount_percentage,TotalPrice ,ClientID,RoomID) 
+VALUES(                       3        ,300      ,DATE  '2022-03-03'    ,      5  ,DATE  '2022-02-08' ,CURRENT_TIMESTAMP ,20                 , 200       ,371   , 'A3');
+
+select * from Reservstion1;
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+CREATE TABLE ClientAccount1 ( 
+ClientID  number(10) PRIMARY KEY,  --FOREIGN KEY  for both tables
+FirstName varchar(40) ,
+LastName  varchar(40) ,
+City      varchar(40) ,
+Phone     varchar(40) ,
+Email     varchar(128) ,
+Pass      varchar(128) ,
+RoomsReserved_no  integer ,
+Created_Account TIMESTAMP  
+);
+
+INSERT INTO ClientAccount1 (ClientID , FirstName , LastName  , City  , Phone   ,      Email           ,     pass       ,   RoomsReserved_no    ,Created_Account) 
+VALUES                    (369,       'Amer',   'Yasser','Cairo', '011267009','ameryasser@yahoo.com', '011267009amer' ,      1         ,CURRENT_TIMESTAMP );
+
+INSERT INTO ClientAccount1 (ClientID,FirstName,LastName  , City  ,    Phone   ,      Email           ,     pass       ,   RoomsReserved_no    ,Created_Account) 
+VALUES                    (370,       'omar',   'ashraf','Cairo', '011267008','omarashrah@yahoo.com', '011267008omar',      1         ,CURRENT_TIMESTAMP  );
+
+
+INSERT INTO ClientAccount1 (ClientID,FirstName,LastName  , City  ,    Phone   ,      Email           ,     pass       ,   RoomsReserved_no    ,Created_Account) 
+VALUES                    (371,       'abdallah',   'ahmed','Cairo', '011267007','abdallah@yahoo.com', '011267007abdo',      0         ,CURRENT_TIMESTAMP   );
+--DELETE FROM ClientAccount WHERE Email = 'ameryasser300@yahoo.com';
+select * from ClientAccount;
+-----------------------------------ALTER  ALTER  ALTER  ALTER 
+ALTER TABLE Rooms1
+ADD FOREIGN KEY (ClientID) REFERENCES ClientAccount1(ClientID);
+--***********************
+ALTER TABLE Reservstion1
+ADD FOREIGN KEY (ClientID) REFERENCES ClientAccount1(ClientID);
+--i have error in next i think it is because it is not primary key 
+--or just it doesnt have any constaint
+--ALTER TABLE Reservstion1
+--ADD FOREIGN KEY (Status) REFERENCES Rooms1(Status);
+--ALL_CONS_COLUMNS describes columns that are accessible to the current user and that are specified in constraints.
+
+
+
+ALTER TABLE Reservstion1
+ADD FOREIGN KEY (RoomID) REFERENCES Rooms1(RoomID);
+
+ALTER TABLE ClientAccount1 
+ADD FOREIGN KEY (RoomID) REFERENCES Rooms1(RoomID);
+
+--if want to delet foregin key 
+--ALTER TABLE Orders
+--DROP CONSTRAINT FK_PersonOrder;
+
+--------------------------------- procedure   procedure   procedure  
+create or replace procedure  GETCOPYID
+(FTitle in varchar2 ,  cid out sys_refcursor)
+as
+begin
+open cid for 
+SELECT fc.CopyID FROM filmcopies fc , filmtitles F
+where fc.FilmID= F.FilmID and  fc.CurrentlyRented= 'n'  and F.FilmTitle= FTitle;
+end GETCOPYID;
+----------------
+select * from rooms1 where rooms1.Price>=5000;
+-------------
+create or replace procedure  GETCOPYID
+(  cid out sys_refcursor)
+as
+begin
+open cid for 
+SELECT fc.CopyID FROM filmcopies fc , filmtitles F
+where fc.FilmID= F.FilmID and  fc.CurrentlyRented= 'n'  and F.FilmTitle= 'The Smurfs';
+end GETCOPYID;
+
+---------------------
+
+create or replace procedure GETRENTID (RID OUT NUMBER)
+as
+BEGIN
+select MAX(rentid) into RID FROM rentals;
+end GETRENTID;
+
+
+create or replace procedure Insert_Rental(RID number, MID Number,CID Number,DRented Date, DBack Date , Cost Number)as
+begin
+insert  into  Rentals(RentID, MemberID,CopyID,DateRented,DateDueBack,RentalCost)
+Values (RID,MID,CID, DRented,DBack, Cost);
+End;
+
+----
+
+insert into filmcopies values
+(15, 3 ,'n');
+insert into filmcopies values
+(5, 3 ,'n');
+
+-------------
+
+select ClientID from ClientAccount1 where email ='ameryasser@yahoo.com' and pass ='011267009amer';
+
+------------
+select ClientID  from ClientAccount1  where FirstName ='Amer' and LastName  ='Yasser';
+
